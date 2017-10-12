@@ -1,0 +1,19 @@
+http://myblaze.ru/urok-20-rabota-s-curl-v-php/
+http://webmasterschool.ru/articles/article57.php
+
+
+	$ch = curl_init('file:///home/maks/Downloads/DCCItems2.xml');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        $xmlstr = curl_exec($ch);
+        curl_close($ch);
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL,"ftp://ftp.dcc.dk");
+        curl_setopt($curl, CURLOPT_FTPLISTONLY, 1);
+        curl_setopt($curl, CURLOPT_USERPWD, "$_FTP[Heksimusltd]:$_FTP[TPfhxwsrr4vq6dpK]");
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+
+        $xmlstr = curl_exec ($curl);
+
+	fopen досту: $handle = fopen("ftp://user:password@example.com/somefile.txt", "w");

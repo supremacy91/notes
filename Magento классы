@@ -1,0 +1,310 @@
+-app
+  -code
+    -core
+       -Mage
+       -Zend
+    -comunity
+       -Phoenix
+       -Cm
+    -local
+  -design
+    -adminhtml
+    -frontend
+    -install	
+  -locale
+    -en_US
+  -etc
+    -modules
+    -config.xml
+    -local.xml
+  -bootstrap.php
+  -Mage.php
+
+
+Модели
+Mage_Core_Model_Abstract - модель
+Mage_Core_Model_Abstract extends Varien_Object implements ArrayAccess 
+ArrayAccess дает возможность обращаться к свойствам обьекта через ['свойство']
+
+Mage_Core_Model_Resourse_Db_Abstract - ресурсная модель
+Mage_Core_Model_Resource_Db_Abstract extends Mage_Core_Model_Resource_Abstract
+
+
+Mage_Core_Model_Resourse_Db_Collection_Abstract модель коллекции
+Varien_Data_Collection_Db - Этот класс является фундаментом для всех коллекций в Magento.
+(abstract class Mage_Core_Model_Resource_Db_Collection_Abstract extends Varien_Data_Collection_Db
+Varien_Data_Collection_Db extends Varien_Data_Collection implements IteratorAggregate, Countable)
+
+------------------------------------------------------------------------------------------------------------------------
+
+Контроллеры
+Mage_Core_Controller_Front_Action - все фронт контроллеры наследуются от него
+Mage_Adminhtml_Controller_Action все админ контроллеры наследуются от него
+Mage_Core_Controller_Varien_Action от него наследуются два контроллера выше
+
+------------------------------------------------------------------------------------------------------------------------
+
+Хелперы
+Mage_Core_Helper_Abstract - все хелперы наследются  от него
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+Блоки Табы Формы Гриды
+
+
+SNS_CmsMenus_Block_Adminhtml_Menuadmin_Edit_Tabs || SNS_CmsMenus_Block_Adminhtml_Menuadmin_Edit_Form
+extends
+Mage_Adminhtml_Block_Widget_Tabs(1)                 || Mage_Adminhtml_Block_Widget_Form(1) || Mage_Adminhtml_Block_Widget_Grid(1) 
+extends
+Mage_Adminhtml_Block_Widget (1)                     || Mage_Adminhtml_Block_Widget_Container
+extends
+Mage_Adminhtml_Block_Template
+extends
+Mage_Core_Block_Template
+extends
+Mage_Core_Block_Abstract
+extends
+Varien_Object
+
+------------------------------------------------------------------------------------------------------------------------
+
+Вставка блоков
+
+Вставить статичный блок в файлы Layout (.xml файлы) Magento	
+<block type="cms/block" name="Имя_статичного_блока">
+    <action method="setBlockId"><block_id>ID_статичного_блока</block_id></action>
+</block>
+
+Вставить статичный блок в файл шаблона (файлы .phtml)	
+<?php echo $this->getLayout()->createBlock("cms/block")->setBlockId("my-new-block")->toHtml() ?>
+
+Вставить статичный блок на CMS страницу в Magento
+{{block type="cms/block" block_id="baner_block"}}
+
+Передать данные из контроллера в блок
+$newsId = Mage::app()->getRequest()->getParam('id', 0);
+$news = Mage::getModel('dsnews/news')->load($newsId);
+$this->getLayout()->getBlock('news.content')->assign(array(
+                "newsItem" => $news,
+            ));
+Получение хендлеров для метода в контроллере
+$this->loadLayout();
+       $layoutHandles = $this->getLayout()->getUpdate()->getHandles();
+------------------------------------------------------------------------------------------------------------------------
+
+Гриды
+Mage_Adminhtml_Block_Widget_Grid_Container - от него наследуется класс контейнера грида, конструктор которого содержит инициализацию
+_blockGroup и _controller.
+
+Mage_Adminhtml_Block_Widget_Grid - от него наследуется класс грида, содержащий метод _prepareColumns, в которой array(
+            'header'    => $this->__('menu ID'),
+            'align'     => 'left',
+            'index'     => 'menu_id' - имя столбца таблицы
+
+
+функция
+------------------------------------------------------------------------------------------------------------------------
+
+
+Запрсы к БД
+
+$write = Mage::getSingleton('core/resource')->getConnection('core_write')
+$read = Mage::getSingleton('core/resource')->getConnection('core_read')
+
+Magento Read Query, returns an array
+$read->fetchAll("select * from customer_entity where email like '%@codexpedia.com'");
+
+Magento Insert Query
+$write->insert(
+        "A_TABLE_NANE", 
+        array("a_column_name" => value, "a_column_name" => value)
+);
+
+Magento Update Query
+$write->update(
+        "A_TABLE_NANE",
+        array("a_column_name" => value, "a_column_name" => value),
+        "entity_id=18"
+);
+
+Magento Delete Query
+$write->delete(
+    "A_TABLE_NANE",
+    "entity_id=18"
+);
+
+Magento Raw Query. It can be used for create, read, update, and delete operations
+$customers = $read->query("select * from customer_entity");
+------------------------------------------------------------------------------------------------------------------------
+
+Get resource instance:
+getResource() - в бизнес моделе -> protected function _getResource() -> Mage::getResourceSingleton($this->_resourceName);
+getResource() - в классе коллекции Mage::getResourceModel($this->getResourceModelName())
+
+Get request/response instance:
+getRequest() в контроллере  Mage_Core_Controller_Varien_Action  return $this->_request;
+getResponse() в контроллере  Mage_Core_Controller_Varien_Action  return $this->_response;
+
+Retrieve table name
+getTable($table) в классе коллекции $this->getResource()->getTable($table);
+getTable($entityName) в ресурсе
+getMainTable() в ресурсе $this->getTable($this->_mainTable)
+getMainTable() в коллекции  $this->setMainTable($this->getResource()->getMainTable());
+
+_init:
+_init($resourceModel) в моделе $this->_setResourceModel($resourceModel);
+_init($mainTable, $idFieldName) в классе ресурсе $this->_setMainTable($mainTable, $idFieldName);
+_init($model, $resourceModel = null)  в коллекции
+
+Get collection instance
+getCollection()  в моделе $this->getResourceCollection(); => Mage::getResourceModel($this->_resourceCollectionName, $this->_getResource());
+Mage::getResourceModel('.../...') - тоже способ вызвать коллекци. напрямую
+
+load($id, $field=null) загрузка в модель на модели $this->_getResource()->load($this, $id, $field);
+load(Mage_Core_Model_Abstract $object, $value, $field = null) загрузка обьекта на ресурсе 
+
+Retrieve connection for read data
+_getReadAdapter - на ресурсе _getReadAdapter
+Retrieve connection for write data
+_getReadAdapter - на ресурсе _getReadAdapter       
+
+
+Магия на ресурсе:
+$select = $this->_getLoadSelect($field, $value, $object);
+$this->_getReadAdapter()->fetchRow($select);
+$select->reset(Zend_Db_Select::WHERE);
+
+Глобальная регистрация обьекта биз
+Mage::registry('cmsMenu_menu');
+
+getTable('cmsMenu/relation')
+
+путь к сериализатору
+Mage/Adminhtml/Block/Widget/Grid/Serializer.php
+
+
+toHtml()
+/Mage/Core/Block/Abstract.php - в ней  final public function toHtml()
+
+
+Mage/Core/Block/Template.php - в ней
+protected function _toHtml()
+    {
+        if (!$this->getTemplate()) {
+            return '';
+        }
+        $html = $this->renderView();
+        return $html;
+    }
+
+------------------------------------------------------------------------------------------------------------------------
+
+Для записи в сессию
+Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('freaks_quotes')->__('Quote successfully saved'));
+
+Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
+
+запишет ошибку на файловою систему если это разрешено в System > Developer > Log Settings
+Mage::logException($e);
+
+загружает layout, создает grid-блок, который мы создадим чуть позже, превращает блок в html и устанавливает как тело ответа в объект Response.
+$this->loadLayout();
+        $this->getResponse()->setBody(
+            $this->getLayout()->createBlock('freaks_quotes/adminhtml_quotes_grid')->toHtml()
+        );
+
+------------------------------------------------------------------------------------------------------------------------
+
+Layouts
+
+/Mage/Core/Controller/Varien/Action.php
+ public function getLayout() {return Mage::getSingleton('core/layout');}
+
+
+Альтернативным вариантом (без макето) вы можете в контроллере вывести HTML код:
+
+$html = Mage::app()->getLayout()->createBlock('siteblocks/list')->setTemplate('siteblocks/list.phtml')->toHtml()
+$this->getResponse()->setBody($html);
+
+getLayout() - метод есть в классах 
+Mage_Core_Helper_Abstract           -  return $this->_layout;
+Mage_Core_Block_Abstract            -  return $this->_layout;
+Mage_Core_Controller_Varien_Action  -  return Mage::getSingleton('core/layout');
+    
+Добавление хендла динамически
+$this->getLayout()->getUpdate()->addHandle('default');
+
+------------------------------------------------------------------------------------------------------------------------
+
+Routers
+
+Core/Controller/Varien/Router
+Cms/Controller/Router
+
+------------------------------------------------------------------------------------------------------------------------
+
+/lib/Varien/Data/Form/Element/ - рендереры, какие поля бывают для форм
+
+/Mage/Adminhtml/Block/Widget/Grid/Column/Renderer/ - классы с типами колонок для грида. Указываются в "type" в array()
+
+/Mage/Adminhtml/Model/System/Config/Source/Yesno - пример базового класса для <source_model></source_model>, который выводит селект Yes/No
+
+getTableName() - только на обьекте Mage_Core_Model_Resource
+Mage::getSingleton('core/resource')->getTableName('cmsMenu/relation'); 
+поле _resources в классе Mage_Core_Model_Resource_Db_Abstract является обьектом класса Mage_Core_Model_Resource
+
+Mage::getBlockSingleton(‘cms/page’)->getPage()->getId(); - получает айди текущей страницы CMS
+
+return $this->getUrl('', array('_direct' => $menu->getLink()));
+return $this->getUrl('*/*/edit', array('_current'=>true));
+
+------------------------------------------------------------------------------------------------------------------------
+
+Mage::log($xml->asXML()) - если добавить в конце метода /Mage/Core/Model/Layout.php/public function generateXml() , то выведет в лог собранный лейаут
+
+echo $this->getFullActionName(); выводит хендл
+
+Mage::app()->getStore() will return the current Mage_Core_Model_Store store object
+
+передача параметров с лейаута в блок
+It’s possible to insert variables into a block from a .xml file by using:
+<action method="setData"><name>category_id</name><value>3</value></action>
+In the block file, this value is taken by:
+$categoryId = $this->getCategoryId();
+$categoryId = $this->getData(‘category_id’);
+
+The collection has some methods for you to filter, sort and specify the selected values:
+• addFieldToFilter(,): used to filter data //https://fishpig.co.uk/magento/tutorials/addattributetofilter/ - инфа по методу
+• setOrder(): used to sort data
+• getSelect(): returns the selected query (is instance object of class Varien_Db_Select)
+to this collections. And you are able to use it to add specific selected value.
+
+    _afterLoad
+    _beforeSave
+    _afterSave
+    _beforeDelete
+    _afterDelete
+
+------------------------------------------------------------------------------------------------------------------------
+
+public function __()
+    {
+        $args = func_get_args();
+        $expr = new Mage_Core_Model_Translate_Expr(array_shift($args), $this->_getRealModuleName());
+        array_unshift($args, $expr);
+        return Mage::app()->getTranslator()->translate($args);
+    }
+
+1) Mage_Core_Controller_Front_Action
+2) Mage_Adminhtml_Controller_Action
+3) Mage_Core_Block_Abstract
+4) Mage_Core_Helper_Abstract
+
+------------------------------------------------------------------------------------------------------------------------
+
+В файле конфигурации также могут быть и нестандартные теги. Например, в модуле Mage_ImportExport есть секция global/importexport. Доступ к нестандартным настройкам можно получить при помощи конструкции
+
+$dataArray = Mage::getConfig()->getNode('global/importexport')->asCanonicalArray();

@@ -1,0 +1,51 @@
+файл etc/apache2/sites-available/sitename.conf:
+<Directory /var/www/html/test/>
+    Require all granted
+</Directory>
+<VirtualHost 127.0.0.1:80>
+    ServerName test.loc
+    ServerAlias test.loc
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/html/test/
+
+    
+
+    <Directory /var/www/html/test/>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+    </Directory>
+
+</VirtualHost>
+
+------------------------------------------------------------------------------------
+
+файл etc/hosts
+127.0.0.1	localhost
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+------------------------------------------------------------------------------------
+
+после всего этого в консоли:
+sudo service apache2 restart
+sudo a2ensite sitename
+
+------------------------------------------------------------------------------------
+
+xdebug
+настройки php.ini
+error_reporting = E_ALL | E_STRICT
+display_errors = On
+display_startup_errors = On
+log_errors = On
+error_log = /etc/home/user/mylog/php_errors.log
+error_log = /etc/home/user/mylog/php_errors.log
+
+------------------------------------------------------------------------------------
+
+

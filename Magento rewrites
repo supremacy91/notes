@@ -1,0 +1,144 @@
+Extends
+
+Этот способ предоставляет возможность заменить стандартный класс честно, без copy-paste. В статье о базовой конфигурации модуля я специально пропустил директиву rewrite. Ее можно прописывать внутри models, blocks и helpers. Например, для переопределения стандартного класса продукта
+
+............................................................
+<models>
+    <catalog>
+        <rewrite>
+            <product>FI_Catalog_Model_Product</product>
+        </rewrite>
+    </catalog>
+</models>
+..........................................................
+
+Если нужен также и стандартный функционал, тогда класс FI_Catalog_Model_Product должен быть потомком Mage_Catalog_Model_Product.
+
+Нужно правильно указать директивы (теги), чтобы rewrite был применен. Принцип такой же как и в Magento path. Т.е. сначала указываем имя модуля (catalog - имя ноды можно посмотреть в конфигурации модуля в секции для моделей), потом rewrite и следующий тег состоит из пути к файлу относительно модуля (вместо слэша нижнее подчеркивание), внутри которого задается имя класса, который будет использоваться вместо стандартного.
+
+Например, чтобы перезаписать класс Mage_Adminhtml_Model_Sales_Order_Create, в конфигурации (в секции models) пропишем следующие строки
+
+<adminhtml>
+    <rewrite>
+        <sales_order_create>FI_Sales_Model_Adminhtml_Sales_Order_Create</sales_order_create>
+    </rewrite>
+</adminhtml>
+
+Тогда при выполнении строки
+
+$createModel = Mage::getModel('adminhtml/sales_order_create');
+
+Magento сначала проверит есть ли rewrite для этой модели если есть, то использует имя заданного класса, если нету составит динамически. Все это относится к хелперам и блокам.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Rewrite контроллеров
+
+To add controller actions to an existing controller, use the following in your config.xml:
+
+<frontend>             <--- area (adminhtml or frontend)
+    <routers>
+        <checkout>     <--- front name (in admin always "adminhtml")
+            <args>
+                <modules>
+                    <stack_checkout before="Mage_Checkout">Stack_Checkout</stack_checkout>
+                                                  ^                ^
+                                                  |                |
+                                           module to override      |
+                </modules>                 (in admin always        |
+            </args>                        "Mage_Adminhtml")   your module
+        </checkout>
+    </routers>
+</frontend>
+
+Then create a controller in your module such as
+
+class Stack_Checkout_OnepageController extends Mage_Core_Controller_Front_Action
+{
+    public function indexAction()
+    {
+        // here you override checkout/onepage/index
+    }
+    public function helloAction()
+    {
+        // here you create a new action checkout/onepage/hello
+    }
+}
+
+
+
+You don't need to extend the original controller class because Magento will look in both classes, in the order defined by before="..."
+
+If you need to extend the original class because you want to reuse other methods from it, you have to include it (remember, controllers are not autoloaded):
+
+require_once(Mage::getModuleDir('controllers','Mage_Checkout') . DS . 'OnepageController.php');
+
+Use observers
+
+------------------------------------------------------------------------------------------------------------------------
+
+Example Of Rewrite :
+
+ In rewrite you have to create your own class and need to extend core class and you can rewrite magento core functions or your own function and logic there
+
+In your config.xml File
+
+<config>
+<frontend>
+    <routers>
+        <tag>
+            <args>
+                <modules>
+                    <inchoo_tag before="Mage_Tag">Inchoo_Tag</inchoo_tag>
+                </modules>
+            </args>
+        </tag>
+    </routers>
+</frontend>
+
+In your controller file
+
+require_once(Mage::getModuleDir('controllers','Mage_Tag').DS.'TagController.php');
+
+
+class Inchoo_Tag_TagController extends Mage_Tag_TagController
+{
+// some code
+}
+
+At Adminhtml
+
+in yourconfig.xml should be
+
+<config>
+<admin>
+    <routers>
+        <adminhtml>
+            <args>
+                <modules>
+                    <inchoo_tag before="Mage_Adminhtml">Inchoo_Tag_Adminhtml</inchoo_tag>
+                </modules>
+            </args>
+        </adminhtml>
+    </routers>
+</admin>
+
+and your controller class should be
+
+require_once(Mage::getModuleDir('controllers','Mage_Adminhtml').DS.'TagController.php');
+
+
+class Inchoo_Tag_Adminhtml_TagController extends Mage_Adminhtml_TagController
+{
+// some code
+}
+
+Thank you for Inchoo team For this nice article	
+
+
+
+https://magento2.atlassian.net/wiki/spaces/m1wiki/pages/14024847/How+To+Overload+a+Controller
+http://inchoo.net/magento/overriding-magento-blocks-models-helpers-and-controllers/
+https://magento.stackexchange.com/questions/133552/magento-1-how-to-override-rewrite-a-core-controller-class
+https://magento.stackexchange.com/questions/10841/rewrite-controller-magento
+https://code.tutsplus.com/tutorials/understand-overriding-in-magento-controllers--cms-23386

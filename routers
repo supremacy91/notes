@@ -1,0 +1,115 @@
+при запуске проекта класс Mage_Core_Model_App запускает метод
+protected function _initFrontController()
+{
+    $this->_frontController = new Mage_Core_Controller_Varien_Front();
+    Mage::register('controller', $this->_frontController);
+    Varien_Profiler::start('mage::app::init_front_controller');
+
+    $this->_frontController->init();
+
+    Varien_Profiler::stop('mage::app::init_front_controller');
+    return $this;
+}
+
+в классе  app/code/core/Mage/Core/Controller/Varien/Front.php запускается метод 
+public function init()
+{} => Mage::dispatchEvent('controller_front_init_routers', array('front'=>$this));
+{
+    Mage::dispatchEvent('controller_front_init_before', array('front'=>$this));
+
+    $routersInfo = Mage::app()->getStore()->getConfig(self::XML_STORE_ROUTERS_PATH);
+
+    Varien_Profiler::start('mage::app::init_front_controller::collect_routers');
+    foreach ($routersInfo as $routerCode => $routerInfo) {            
+        if (isset($routerInfo['disabled']) && $routerInfo['disabled']) {
+            continue;
+        }
+        if (isset($routerInfo['class'])) {
+            $router = new $routerInfo['class'];
+            if (isset($routerInfo['area'])) {
+                $router->collectRoutes($routerInfo['area'], $routerCode);            
+            }            
+            $this->addRouter($routerCode, $router);
+        }
+    }
+    Varien_Profiler::stop('mage::app::init_front_controller::collect_routers');
+
+    Mage::dispatchEvent('controller_front_init_routers', array('front'=>$this));
+
+    // Add default router at the last
+    $default = new Mage_Core_Controller_Varien_Router_Default();
+    $this->addRouter('default', $default);
+
+    return $this;
+}
+
+Потом отрабатывает метод dispatch() в Mage_Core_Controller_Varien_Front
+public function dispatch()
+{} => while (!$request->isDispatched() && $i++ < 100) {
+            foreach ($this->_routers as $router) {
+                /** @var $router Mage_Core_Controller_Varien_Router_Abstract */
+                if ($router->match($request)) {
+                    break;
+                }
+            }
+        }
+
+
+в конфиге Mage/Cms/etc/config.xml указан обработчик
+<events>
+            <controller_front_init_routers>
+                <observers>
+                    <cms>
+                        <class>Mage_Cms_Controller_Router</class>
+                        <method>initControllerRouters</method>
+                    </cms>
+                </observers>
+            </controller_front_init_routers>
+</events>
+
+Mage/Core/Controller/Varien/Front.php - в нем перебираютс все роу
+
+
+class Mage_Core_Controller_Varien_Front extends Varien_Object
+в нем есть метод init ()
+
+
+<routers>
+    <atwixtest>
+        <use>standard</use>
+        <args>
+            <module>Atwix_Test</module>
+            <frontName>test-frontname</frontName>
+        </args>
+    </atwixtest>
+</routers>
+
+Yes, if you look to  <use>standard</use>  code, that means – Magento will use the standard router for processing requests and URLs,  and when you follow magento.dev/test-frontname URL, in this case, Magento says for the standard router that it should take action indexAction from IndexController from module Atwix_Test – it is not so complicated, we guess. Actually, when the requests come to Magento, then it calls all routers till one of them will response – otherwise, there 404 page will be displayed.
+
+Now, let’s start creating own router. First of all, we need to declare router in config.xml:
+
+<default>
+    <web>
+        <routers>
+            <atwixtest>
+                <area>frontend</area>
+                <class>Atwix_Test_Controller_Router</class>
+            </atwixtest>
+        </routers>
+    </web>
+</default>
+
+class Atwix_Test_Controller_Router extends Mage_Core_Controller_Varien_Router_Standard
+{
+    public function match(Zend_Controller_Request_Http $request)
+    {
+        $request->setModuleName('test-frontname')
+            ->setControllerName('index')
+            ->setActionName('index');
+
+        return true;
+    }
+
+}
+
+The previous code explains Magento that it should transmit control to the indexAction function which is placed in app/code/local/Atwix/Test/controllers/IndexController.php., and your router will be called after admin and standard, but if these routers do not respond for the requests – then your router will be called.

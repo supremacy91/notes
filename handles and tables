@@ -1,0 +1,61 @@
+<catalog_product_view> - он отвечает за событие при заходе на вью товара
+<cms_index_index> - главная страница
+<cms_page> - хендл для всех цмс страниц
+
+
+core_resourse - хранит список модулей
+core_config_data - хранит настройки конфигурации проекта
+eav_attribute - хранит аттрибуты для EAV сущностей
+eav_entity_type - таблица всех EAV сущностей	
+sales_flat_quote_item - здесь хранятся продукты попавшые в checkout
+sales_flat_quote - таблица квот
+sales_flat_order - таблица заказов
+
+
+eav_entity_type - хранит список EAV сущностей
+eav_attribute - хранит список аттрибутов для всех типов EAV сущностей
+catalog_eav_attribute - хранит парметры для аттрибутов
+eav_attribute_set - attribute sets
+eav_entity_attribute - связь attribute-attribute_set-attribute_group
+
+catalog_product_entity - самая верхняя таблица в иерархии продукта
+catalog_product_link - хранит составляющие групповых товаров
+catalog_product_super_link - хранит составляющие конфигурационных товаров
+catalog_product_bundle_selection - хранит составляющие для бандлов 
+catalog_category_product - таблица хранящая связь товара и его категории
+cataloginventory_stock_item - хранит qty для товаров
+eav_attribute_option_value - хранит значение опций для аттрибутов (выбираем аттрибут -> manage Label/Options -> Add option -> поле Admin)
+eav_attribute_option - таблица, связывающая опцию и аттрибут
+catalog_category_entity - хранит список категорий
+catalog_category_product - хранит связь между категорией и товаром
+
+catalog_category_product_index - таблица индексов для отображения на фронте, заполняется при перестройке индексов 
+catalog_product_index_price
+
+catalog_product_website - привязка продукта к вебсайту
+core_website - список вебсайтов
+
+index_process - здесь все индексеры, которые видны через админку
+
+
+
+Mage::app()->getWebsites()
+Mage::app()->isSingleStoreMode()
+
+------------------------------------------------------------------------------------------------------------------------
+
+содержание таблиц:
+
+catalog_product_entity
+	-entity_id - айдишник
+	-entity_type_id - ссылка на таблицу eav_entity_type
+	-attribute_set_id - ссылка на таблицу eav_attribute_set
+	-type_id - указывает тип продукта. simple, configurable, bundled, downloadable, grouped;
+	-sku - поле sku
+	-has_options - указывает, есть ли кастомные опции у продукта
+	-required_options  идетнифицирует, есть ли обязательные кастомные опции у продукта
+	-created_at - дата создания
+	-updated_at - дата обновления
+
+
+

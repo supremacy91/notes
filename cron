@@ -1,0 +1,90 @@
+https://blog.amasty.com/configure-magento-cron-job/
+https://magento.stackexchange.com/questions/140354/how-to-configure-cron-job-for-magento-1-9-2-3
+
+
+/bit/sh   ? 
+
+
+Конфигурация Cron-а
+
+Роботу cron-а можно слегка оптимизировать под свои нужды в настройках System -> Configuration -> System -> Cron. Рассмотрим их назначение
+
+    генерировать задачи каждые (A минут) - новые задания (при запуске cron.php) будут создаваться не чаще чем через A минут
+    генерировать задачи наперед (на В минут) - задачи будут наперед генерироватся на B минут
+    задача будет считаться утеряной (через C минут) - если cron будет запущен меньше чем через C минут после того как какая-то задача была запланирована, то она выполнится; если позже то она получит статус утеряной, пропущеной
+    очистка истории каждые (D минут)
+    время жизни успешно завершенных операций
+    время жизни заданий которые провались при выполнении
+
+
+таблица, хранящая кроны:
+cron_shedule
+
+
+Magento Cron Best Practices
+
+Generate schedules every: 60
+Schedule ahead for: 1
+Missed if not run within: 60
+History cleanup every: 120
+Success history lifetime: 120
+Failure history lifetime: 120
+
+run the cron every 15 minutes for better results and that will not overlap with other Cron services.
+What goes in the background
+
+When you set the Cron this will happen
+
+// initialize configuration and load event observers only from /crontab/ section
+Mage::getConfig()->init()->loadEventObservers('crontab');
+ 
+// initialize crontab event area
+Mage::app()->addEventArea('crontab');
+ 
+// dispatch 'default' event for observers specified in crontab configuration
+Mage::dispatchEvent('default');
+	
+
+// initialize configuration and load event observers only from /crontab/ section
+Mage::getConfig()->init()->loadEventObservers('crontab');
+ 
+// initialize crontab event area
+Mage::app()->addEventArea('crontab');
+ 
+// dispatch 'default' event for observers specified in crontab configuration
+Mage::dispatchEvent('default');
+
+This sequence will invoke Mage_Cron_Model_Observer→dispatch(), which in turn will:
+
+    execute scheduled tasks
+    generate future scheduled tasks if needed
+    clean up history of scheduled tasks
+
+Tasks are scheduled for each time the job needs to be run based on
+
+    <schedule><cron_expr>0 1 * * *</cron_expr></schedule>
+
+expression and stored in cron_schedule table.
+
+Each record consists of the following fields:
+
+    schedule_id – unique identifier for scheduled task
+    job_code – job identifier from configuration
+    status – can be one of pending, running, success, missed, error
+    messages – custom text reported by method that was executed by the job
+    created_at – date/time when the task was created at
+    scheduled_at – date/time when the task is planned to be executed
+    executed_at – date/time when the task was actually executed (null prior to execution)
+    finished_at – date/time when the task finished execution (null prior to execution)
+
+When schedules are generated, status is set to pending, created_at to now() and scheduled_at to target date/time.
+
+When pending schedules are executed, status is set to running and executed_at to now().
+
+When scheduled task is finished successfully, status is set to success and finished_at to now().
+
+When scheduled task has thrown an exception, status is set to error and finished_at to now().
+
+If task status is pending and scheduled_at is older than “Missed if not run within” configured value, status is set to missed.
+
+

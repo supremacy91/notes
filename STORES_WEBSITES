@@ -1,0 +1,146 @@
+для бекенда ест ьвсегда виртуальный Вебсайт, который занесен в таблицу core_website с id = 0 code = admin
+Когда мы редактируем например товар через админку, то мы находимся именно на админском вебсайте, который всегда один внезависимости от того, сколько вообще вебсайтов создано в проекте.
+Если у нас больше одного Store View, то на админском вебсайте появляется дропдавн выбора Store view для товара. Каждый аттрибут в зависимости от типа (Global, Website, Store view) содержит поле для значения этого аттрибута.
+Если указан Global - то для всех Store view будет одно значение аттрибута и меняя его на одном SV мы будем менять его на всех SV всех вебсайтов. 
+Если указан Website - то для всех Store view в пределах того Website, для которого выбран Store View при редактированиии товара будет одно значение аттрибута. Меняя его на одном SV мы будем менять его на всех SV того вебсайта, на котором находится выбранный Store view.
+Если указан Store view - то задается значение для именно выбранного в дропдавне Store view. 
+
+Также для аттрибутов с типом Dropdown в админке в редактировании аттрибута заносятся значения, которые будут отображаться как идентификаторы для самого значения аттрибута. Если значение для конкретноого SV не указано, оно будет взято из значения Admin.
+
+Если у какого нибудь Вебсайта для конкретного Store не создан ни один Store View, то этот Store  нельзя будет выбрать по дефолту для этого вебсайта.
+
+Если у нас в Вебсайте несколько store view, то будет выбор нужного для товара при его редактировании. На фронте аттрибуты будут отображены следующим образом:
+
+аттрибуты есть со скопами Store View, Website, Global
+Если указан Store view, то для него у товаров на фронте будет взято значение соответсвующего Store view вебсайта админки.
+Если указан Website, то для него у товаров на фронте будет взято значение, установленное для данного вебсайта в админке как default.
+Если указан Global, то на всех вебсайтах и сторах будут одинаковые значения.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Аттрибуты
+
+Редактирования значения аттрибута: 
+
+$model = Mage::getModel('catalog/resource_eav_attribute');
+$model->loadByCode(4, 'color');
+if ($model) {
+    $model->setIsFilterable(1)
+            ->setIsFilterableInSearch(1)
+            ->save();
+}
+ 
+// Method 2
+$attributeId = Mage::getResourceModel('eav/entity_attribute')->getIdByCode('catalog_product','color');
+if ($attributeId) {
+    $attribute = Mage::getModel('catalog/resource_eav_attribute')->load($attributeId);
+    $attribute->setIsSearchable(0)->save();
+}
+
+$installer = Mage::getResourceModel('catalog/setup', 'catalog_setup');
+
+
+Список значений аттрибутов:
+
+if (!$installer->getAttributeId(Mage_Catalog_Model_Product::ENTITY, 'attribute_name')) {
+    $installer->addAttribute(Mage_Catalog_Model_Product::ENTITY, 'attribute_name', array(         // TABLE.COLUMN:                                       DESCRIPTION:
+        'label'                      => 'Label',                                                  // eav_attribute.frontend_label                        admin input label
+        'group'                      => 'General',                                                // (not a column)                                      tab in product edit screen
+        'sort_order'                 => 0,                                                        // eav_entity_attribute.sort_order                     sort order in group
+        'backend'                    => 'module/class_name',                                      // eav_attribute.backend_model                         backend class (module/class_name format)
+        'type'                       => 'varchar',                                                // eav_attribute.backend_type                          backend storage type (varchar, text etc)
+        'frontend'                   => 'module/class_name',                                      // eav_attribute.frontend_model                        admin class (module/class_name format)
+        'note'                       => null,                                                     // eav_attribute.note                                  admin input note (shows below input)
+        'default'                    => null,                                                     // eav_attribute.default_value                         admin input default value
+        'wysiwyg_enabled'            => false,                                                    // catalog_eav_attribute.is_wysiwyg_enabled            (products only) admin input wysiwyg enabled
+        'input'                      => 'input_name',                                             // eav_attribute.frontend_input                        admin input type (select, text, textarea etc)
+        'input_renderer'             => 'module/class_name',                                      // catalog_eav_attribute.frontend_input_renderer       (products only) admin input renderer (otherwise input is used to resolve renderer)
+        'source'                     => null,                                                     // eav_attribute.source_model                          admin input source model (for selects) (module/class_name format)
+        'required'                   => true,                                                     // eav_attribute.is_required                           required in admin
+        'user_defined'               => false,                                                    // eav_attribute.is_user_defined                       editable in admin attributes section, false for not
+        'unique'                     => false,                                                    // eav_attribute.is_unique                             unique value required
+        'global'                     => Mage_Catalog_Model_Resource_Eav_Attribute::SCOPE_GLOBAL,  // catalog_eav_attribute.is_global                     (products only) scope
+        'visible'                    => true,                                                     // catalog_eav_attribute.is_visible                    (products only) visible on admin, setting to false stops import of this attribute
+        'visible_on_front'           => false,                                                    // catalog_eav_attribute.is_visible_on_front           (products only) visible on frontend (store) attribute table
+        'used_in_product_listing'    => false,                                                    // catalog_eav_attribute.used_in_product_listing       (products only) made available in product listing
+        'searchable'                 => false,                                                    // catalog_eav_attribute.is_searchable                 (products only) searchable via basic search
+        'visible_in_advanced_search' => false,                                                    // catalog_eav_attribute.is_visible_in_advanced_search (products only) searchable via advanced search
+        'filterable'                 => false,                                                    // catalog_eav_attribute.is_filterable                 (products only) use in layered nav
+        'filterable_in_search'       => false,                                                    // catalog_eav_attribute.is_filterable_in_search       (products only) use in search results layered nav
+        'comparable'                 => false,                                                    // catalog_eav_attribute.is_comparable                 (products only) comparable on frontend
+        'is_html_allowed_on_front'   => true,                                                     // catalog_eav_attribute.is_visible_on_front           (products only) seems obvious, but also see visible
+        'apply_to'                   => 'simple,configurable',                                    // catalog_eav_attribute.apply_to                      (products only) which product types to apply to
+        'is_configurable'            => false,                                                    // catalog_eav_attribute.is_configurable               (products only) used for configurable products or not
+        'used_for_sort_by'           => false,                                                    // catalog_eav_attribute.used_for_sort_by              (products only) available in the 'sort by' menu
+        'position'                   => 0,                                                        // catalog_eav_attribute.position                      (products only) position in layered naviagtion
+        'used_for_promo_rules'       => false,                                                    // catalog_eav_attribute.is_used_for_promo_rules       (products only) available for use in promo rules
+    ));
+}
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Добавление аттрибутов продуктам в ehex
+
+$checkAttributeSetExists = $installer->getAttributeSet(4, "DDCAttributeSet", 'attribute_set_id');
+
+        if (!$checkAttributeSetExists) {
+            $skeletonID = $installer->getAttributeSetId('catalog_product', 'Default');
+            $entityTypeId = Mage::getModel('catalog/product')
+                ->getResource()
+                ->getEntityType()
+                ->getId();
+
+            $attributeSet = Mage::getModel('eav/entity_attribute_set')
+                ->setEntityTypeId($entityTypeId)
+                ->setAttributeSetName("DDCAttributeSet");
+
+            $attributeSet->validate();
+            $attributeSet->save();
+
+            $attributeSet->initFromSkeleton($skeletonID)->save();
+        }
+
+
+        $attributeId = Mage::getResourceModel('eav/entity_attribute')->getIdByCode('catalog_product','manufacturer');
+        if ($attributeId) {
+            $attribute = Mage::getResourceModel('catalog/eav_attribute')->load($attributeId);
+            $attribute->setIsGlobal(1)->save();
+            $attribute->setApplyTo("simple")->save();
+            $attribute->setFrontendLabel("Manufacturer")->save();
+            $attribute->setFrontendInput("select")->save();
+            $attribute->setbackendType("int")->save();
+            $attribute->setIsConfigurable(1)->save();
+            $attribute->setIsSearchable(1)->save();
+            $attribute->setIsVisibleInAdvancedSearch(1)->save();
+            $attribute->setIsComparable(1)->save();
+            $attribute->setIsFilterable(1)->save();
+	    $attribute->setIsRequired(0)->save();
+        }
+        $attribute_set_id = $installer->getAttributeSetId('catalog_product', "DDCAttributeSet");
+        $attribute_group_id = $installer->getAttributeGroupId('catalog_product', $attribute_set_id, "General");
+        $attribute_id = $installer->getAttributeId('catalog_product', "manufacturer");
+        $installer->addAttributeToSet($entityTypeId='catalog_product',$attribute_set_id, $attribute_group_id, $attribute_id);
+
+ $installer->addAttribute('catalog_product', 'condition', array(
+            'user_defined'    => 1
+        ));
+        $attributeId = Mage::getResourceModel('eav/entity_attribute')->getIdByCode('catalog_product','condition');
+        if ($attributeId) {
+            $attribute = Mage::getResourceModel('catalog/eav_attribute')->load($attributeId);
+            $attribute->setIsGlobal(1)->save();
+            $attribute->setApplyTo("simple")->save();
+            $attribute->setFrontendLabel("Condition")->save();
+            $attribute->setFrontendInput("select")->save();
+            $attribute->setbackendType("int")->save();
+            $attribute->setIsConfigurable(1)->save();
+            $attribute->setIsSearchable(1)->save();
+            $attribute->setIsVisibleInAdvancedSearch(1)->save();
+            $attribute->setIsComparable(1)->save();
+            $attribute->setIsFilterable(1)->save();
+	    $attribute->setIsRequired(0)->save();
+        }
+        $attribute_set_id = $installer->getAttributeSetId('catalog_product', "DDCAttributeSet");
+        $attribute_group_id = $installer->getAttributeGroupId('catalog_product', $attribute_set_id, "General");
+        $attribute_id = $installer->getAttributeId('catalog_product', "condition");
+        $installer->addAttributeToSet($entityTypeId='catalog_product',$attribute_set_id, $attribute_group_id, $attribute_id);
+

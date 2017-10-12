@@ -1,0 +1,274 @@
+/Mage/Adminhtml/Model/System/Config/Source/Yesno - пример базового класса для <source_model></source_model>, который выводит селект Yes/No
+Чтобы товар после добавления появился в магазине надо:
+Catalog->Product->Inventory->Stock Availability = In Stock
+Обновление индексов: System->Index Managament
+
+Структура system.xml
+<config>
+    <tabs> 
+        <ign translate="label" module="siteblocks"> <!-- Добавим свою вкладку в меню слева-->
+            <label>IGN</label>
+            <sort_order>2</sort_order>
+        </ign>
+    </tabs>
+    <sections>
+        <siteblocks module="siteblocks" translate="label"> - имя тега может быть любым
+            <label>Siteblocks</label>
+            <tab>ign</tab>  - к какому табу относитс наша секция 
+            <frontend>text</frontend> - тип поля для секции, перечень доступных полей тут /lib/Varien/Data/Form/Element/
+            <sort_order>1</sort_order>
+            <show_in_default>1</show_in_default> - настройки отображения для областей действия (scope): default, website, store. Настройка
+            <show_in_website>1</show_in_website> - заданная в скоупе store переопределяет значения заданные в default и website. Аналогично 
+            <show_in_store>1</show_in_store> - параметр заданный в скоупе website переопределяет значение по умолчанию, т.е. скоуп default.
+            <groups> - группы - это то что будет отображаться в контенте справа для выбранной секции.
+                <settings module="siteblocks" translate="label"> - имя конкретной группы произвольное
+                    <label>Settings</label>
+                    <expanded>1</expanded> - по умолчанию развернуто или нет
+                    <sort_order>1</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_Website>1</show_in_Website>
+                    <show_in_store>1</show_in_store>
+                    <fields> - контент группы - полотно что удет выпадать когда будем щелкать по строке группы
+                        <enabled translate="label comment" module="siteblocks">
+                            <label>Enabled</label>
+                            <frontend_type>select</frontend_type> - тип поля для секции, перечень тут /lib/Varien/Data/Form/Element/
+                            <source_model>siteblocks/source_status</source_model> - это будет значением поля для бекенда и то т о в нем будет 								отображаться. Классы сорс-моделей из ядра тут /Mage/Adminhtml/Model/System/Config/Source
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_Website>1</show_in_Website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Is module enabled</comment>
+                        </enabled>
+                        <blocks_count>
+                            <label>Blocks on page</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>2</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_Website>1</show_in_Website>
+                            <show_in_store>1</show_in_store>
+                            <depends><enabled>1</enabled></depends> <!-- Так можно указать зависимость от значения другого поля -->
+                        </blocks_count>
+                        <raw_text>
+                            <label>Raw text</label>
+                            <frontend_type>textarea</frontend_type>
+                            <sort_order>3</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_Website>1</show_in_Website>
+                            <show_in_store>1</show_in_store>
+                            <depends><enabled>1</enabled></depends>
+                        </raw_text>
+                    </fields>
+                </settings>
+            </groups>
+        </siteblocks>
+    </sections>
+</config>
+
+getConfigData($field) - возвращает поле группы для обьекта класса Carrier. Вызывает метод Mage::getStoreConfig('carriers/$this->_code/field')
+Mage::getStoreConfig('section/group/field') - возвращает значение <source_model></source_model> для поля field из группы group из секции section в файле system.xml. 
+Если <frontend_type> поля будет исключающим <source_model> (например text или textarea), то значением поля для бекенда будет сама строка
+
+Mage::app()->getConfig()->saveConfig('section/group/field','value') - задаем програмным путем значение для конкретного поля. То есть после перезагрузки странице оно будет отображено со значением value
+
+Mage::app()->getConfig()->deleteConfig() - удаляем конфиг. (по ходу нужно только в том случае, если удаляем модуль с системы)
+------------------------------------------------------------------------------------------------------------------------
+
+В процессе проведения оплаты, Magento создает объект “request” на ставку оплаты, который содержит всю нужную информацию о доставке. Этот запрос может быть использован для определения применяемых издержек. К примеру, “express”-доставка не может быть применена к заказам дешевле 10$. Затем все применяемые ставки “прикрепляются” к объекту “result”, который генерирует список методов, из которых покупатель может выбирать.
+
+В следующем списке представлены названия определенных выше концептов, а также представляет классы Magento:
+
+* Request
+Mage_Shipping_Model_Rate_Request
+
+* Result
+Mage_Shipping_Model_Rate_Result
+
+* Method
+Mage_Shipping_Model_Rate_Result_Method
+
+
+* Carrier
+Любой класс, который дополняет абстрактный класс Mage_Shipping_Model_Carrier_Abstract и реализует интерфейс Mage_Shipping_Model_Carrier_Interface
+
+
+Добавление аттрибута товаров:
+1) Создать сам аттрибут (Catalog->Attributes->manage Attributes)
+2) добавить его в сет аттрибутов (Catalog->Attributes->manage Attribute Sets)
+
+Задание правил для товаров:
+Promotions -> Shopping Cart Price Rules - там в разделе Actions можем выбрать FreeShipping Для определенных SKU
+
+Configurable products:
+1) Создаем продукт с выбором  Configurable
+2) Заходим в продукт и в левой колонке вкладка Associated Products - в ней создаем конкертные екземпляры 
+
+------------------------------------------------------------------------------------------------------------------------
+
+Добавление своего аттрбута в Customers, код инсталл скрипа:
+<?php
+$installer = $this;
+
+$installer->startSetup();
+
+$installer->addAttribute(
+    'customer',
+    'customer_balance',
+    array(
+        "backend_type" => "decimal",
+        "frontend_inpt" => "text",
+        "is_required" => "0",
+        "system" => "1",
+        "visible" => "1",
+        "label" => "Customer balance"
+    )
+);
+
+
+Mage::getSingleton('eav/config')
+    ->getAttribute('customer', 'customer_balance')
+    ->setData('used_in_forms', array('adminhtml_customer'))
+    ->save();
+
+
+$installer->endSetup();
+
+------------------------------------------------------------------------------------------------------------------------
+
+public function refund($payment, $amount) 
+payment - Mage_Sales_Model_Order_Payment
+amount - то, что мы указываем в качестве отката в refund - форме
+
+------------------------------------------------------------------------------------------------------------------------
+
+Price is the value in the selected store currency
+
+Base Price is the value in the default store currency.
+
+If you have only one currency on your website then base_price and price should always have the same value.
+
+------------------------------------------------------------------------------------------------------------------------
+
+prices
+
+Если телаем без логина заказ  - то цены отображаются и учитываются для группы пользователей NOT  LOGGED IN
+Если делем заказ через личный аккаунт - то цены отображаются и учитываются для группы пользователей General
+Что бы цены учитывались соответвенно  другим группам покупателей  - админ в админке должен занести конкретного пользователя в конкретную группу
+
+цены при задании Special price, Group price, Tier price формируются в следующей иерархии:
+Tier price => Group price => Special price
+то есть tier price перебивает остальные
+
+
+simple product
+в админке каждому товару в поле Prices задаем Price
+
+При создании заказа - он поступает в админку в Orders. Пока админ не создаст инвоис - заказ считается не оплачен. Инвоис подтверждает то заказ оплачен и в нем должен быть подтвержден полный счет заказа.
+Инвоис создается автоматически для онлайнового заказа. 
+
+
+Refund
+
+При просмотре заказа, если метод оплаты был онлайновый - то можно сразу нажать Credit Memo. Но тогда можно будет сделать только Refund offline. Чтобы отобразилась кнопка Refund (произвести Refund online) - нужно зайти в инвойс и нажать Credit Memo в нем. Тогда должны будут отображены 2 кнопки: Refund и  Refund Offline.  Для заказов с онлайновой оплатой инвойс на полную сумму возврата делается автоматически при создании заказа. Для товаров с оффлайновым методом оплаты инвойся делаются вручную и для них не будет кнопки Refund. Для таких товаров без разницы, как заходить на Credit Memo - через иновйс или через ордер.
+
+--------------------------------------------------------------------------------------------------------------
+
+
+https://www.classyllama.com/blog/magento-collecttotals-core-process - хорошая статья
+The collectTotals process
+
+сначала в классе Mage_Sales_Model_Quote вызывается collectTotals()
+он выбрасывает событие sales_quote_collect_totals_before 
+Затем перебирает все адреса и вызывает ихний метод collectTotals(), который проходит по всем коллекторам, вызывая на них метод collect(), который перебирает список продуктов и считает значения.
+
+Magento use Mage_Sales_Model_Quote_Address_Total_Collector class to collect individual total models by “global/sales/quote/totals” key in config.xml.
+тотал модели обьявляются внутри нодов:
+<global>
+ <sales>
+   <quote>
+      <totals>
+             .....
+      </totals>
+   </quote>
+ </sales>
+</global>
+ 
+<global>	
+	<sales>
+  	    <quote>
+                <totals>
+                    <nominal>
+                        <class>sales/quote_address_total_nominal</class>
+                        <before>subtotal</before>
+                    </nominal>
+                    <subtotal>
+                        <class>sales/quote_address_total_subtotal</class>
+                        <after>nominal</after>
+                        <before>grand_total</before>
+                    </subtotal>
+                    ...
+                </totals>
+            </quote>
+	</sales>
+</global>
+тотал модели являются наследниками Mage_Sales_Model_Quote_Address_Total_Abstract
+например, class Mage_Sales_Model_Quote_Address_Total_Subtotal extends Mage_Sales_Model_Quote_Address_Total_Abstract
+
+Как внедряются описанные в конфиге тоталы в процесс чекаута:
+Magento use Mage_Sales_Model_Quote_Address_Total_Collector class to collect individual total models by “global/sales/quote/totals” key in config.xml.
+
+В какой последовательности запускаются тотал модели:
+1. Checkout Cart call save() method.
+2. Quote call collectTotals() method to collect totals.
+3. Quote Address call collectTotals() method to collect address totals.
+4. Mage_Sales_Model_Quote_Address_Total_Collector class was used to excute on each Total model.
+
+Когда запускаются тотал модели:
+– Shopping cart display action.
+– Add product to shopping cart action.
+– Add products in group to shopping cart action.
+– Update product configuration for a cart item.
+
+Какими данными обычно манипулируют тотал модели:
+Total models have access to below objects:
+– Mage_Sales_Model_Quote_Address, Quote item, product, store.
+The objects they usually manipulate:
+– Mage_Sales_Model_Quote_Address, Quote item.
+
+
+<global>
+. . .
+    <sales>
+        <quote>
+            <totals>
+                <nominal>
+                    <class>sales/quote_address_total_nominal</class>
+                    <before>subtotal</before>
+                </nominal>
+                <subtotal>
+                    <class>sales/quote_address_total_subtotal</class>
+                    <after>nominal</after>
+                    <before>grand_total</before>
+                </subtotal>
+                . . .
+            </totals>
+        </quote>
+    . . .
+    </sales>
+. . .
+</global>
+
+
+
+Mage_Sales_Model_Quote extends Mage_Core_Model_Abstract
+Mage_Checkout_Model_Cart extends Varien_Object implements Mage_Checkout_Model_Cart_Interface
+
+quote = cart contents in Magento. Theoretically the quote is an offer and if the user accepts it (by checking out) it converts to order. You can control the lifetime yourself and they store metadata about the store, totals information , shipping and billing relations, relations to payment method and shipping method (that is quoted separately) and items 
+A Cart is composed of a Quote so Cart Product is really a Quote Item so when you deal with $cart->addProduct() it does some check and add it by $this->getQuote()->addProduct() Don't use directly (when it's possible) quote function like Mage_Sales_Model_Quote::addProduct() because checks will not be done.
+
+A quote is actually a 'cart' object.
+A customer can have many quotes. One for each website.
+the quote object is not created when the customer is created. It is created when the customer adds the first product to the cart.
+Also a quote is not necessarily assigned to a customer. You can have a quote when browsing the website as guest.
+In that case the quote remains in the db after the session expires.
+The quote is created when you call Mage::getSingleton("checkout/session")->getQuote(). 
+

@@ -1,0 +1,241 @@
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+html, body, div, span, applet, object, iframe,h1, h2, h3, h4, h5, h6, p, blockquote, pre,a, abbr, acronym, address, big, cite, code,del, dfn, em, img, ins, kbd, q, s, samp,small, strike, strong, sub, sup, tt, var,b, u, i, center,dl, dt, dd, ol, ul, li,fieldset, form, label, legend,table, caption, tbody, tfoot, thead, tr, th, td,article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary,time, mark, audio, video {margin: 0;padding: 0;border: 0;font-size: 100%;font: inherit;vertical-align: baseline;}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {display: block;}
+body {line-height: 1;}
+ol, ul {list-style: none;}
+blockquote, q {quotes: none;}
+blockquote:before, blockquote:after,q:before, q:after {content: '';content: none;}
+table {border-collapse: collapse;border-spacing: 0;}
+/* Magento responsive theme style starts here: by @RichardCarter */
+body {
+background: #EFEFEF;
+font: normal 80%/150% Arial, Helvetica, sans-serif;
+}
+.page {
+background: #fff;
+border-radius: 10px;
+margin: 10px;
+padding: 10px;
+}
+.footer-container {
+clear: both
+}
+img, 
+img[height], 
+img[width]{
+height: auto; /* You may need to use !important here to ensure this rule overwrites any others */
+max-width: 100%; /* You may need to use !important here to ensure this rule overwrites any others */
+} 
+
+.mobile-hide {
+	/*display: none; Un-comment this line if you want to use the simple "skip to footer" navigation style */
+}
+.mobile-nav {
+	background: #EFEFEF url("../images/mobile-nav.png") no-repeat 10px center;
+	border: 1px #CCC solid;
+	border-radius: 5px;
+	color: #333;
+	display: none; /* Hide this line if you want to use the simple "skip to footer" navigation style */
+	/*display: block; Un-comment this line if you want to use the simple "skip to footer" navigation style */
+	padding: 5px 5px 5px 45px;
+}
+.mobile-nav:hover {
+	text-decoration: none;
+}
+.mobile-footer-nav {
+	background: #EFEFEF;
+	clear: both;
+	display: none; /* Hide this line if you want to use the simple "skip to footer" navigation style */
+	padding: 20px;
+}
+.mobile-footer-nav li {
+	display: inline;
+	padding: 5px 10px;
+}
+.mobile-footer-nav li a {
+	color: #333;
+}
+/* Simple navigation style: comment this out entirely if you want to use the simple "skip to footer" navigation style */
+#nav a {
+	color: #333;
+	text-decoration: none;
+}
+#nav a:hover {
+	text-decoration: underline;
+}
+#nav li,
+#nav ul {
+	display: inline;
+}
+#nav li {
+	padding: 10px;
+}
+#nav ul li a {
+	color: #777;
+}
+
+
+/* Media queries */
+
+/* Read here about why pixels aren't a great unit to use for media queries: http://blog.cloudfour.com/the-ems-have-it-proportional-media-queries-ftw/ */
+@media only screen and (min-width: 50em) { /* 50em = roughly desktop/large tablet screen width */
+	.mobile-hide {
+		display: block;
+	}
+	.mobile-nav, 
+	.mobile-footer-nav {
+		display: none;
+	}
+	.col-main, .col-left, .col-right, .col-wrapper {
+	display: inline;
+	margin: 1%;
+	padding: 2%;
+	}
+	.col-left, 
+	.col-right, 
+	.col-wrapper, 
+	.col2-right-layout .col-main {
+	float: left
+	}
+	.col-wrapper, 
+	.col-main {
+	width: 69%
+	}
+	.col-left, 
+	.col-right {
+	width: 19%
+	}
+	.col-main {
+	float: right
+	}
+		
+	/* Alter column widths for 3 column layout */
+	.col3-layout .col-main {
+	width: 60%
+	}
+	.col3-layout .col-left {
+	width: 27%
+	}
+	
+	/* Drop-down menu styles, adapted from /skin/frontend/base/default/css/styles.css, Magento 1.7 */
+	.nav-container {
+		padding: 10px;
+	}
+	#nav { 
+		font-size:13px;
+		margin:0 auto;
+		padding:0 16px;
+		width: 100%;
+	}
+	/* All Levels */
+	#nav li {
+		position:relative;
+		padding: 0;
+		text-align:left;
+	}
+	#nav li.over {
+		z-index:998;
+	}
+	#nav a,
+	#nav a:hover {
+		display:block;
+		line-height:1.3em;
+		text-decoration:none;
+	}
+	#nav span {
+		cursor:pointer;
+		display:block;
+		white-space:nowrap;
+	}
+	#nav li ul span {
+		white-space:normal;
+	}	
+	/* 0 Level */
+	#nav li {
+		float:left;
+	}
+	#nav li.active a {
+		color:#d96708;
+	}
+	#nav a {
+		color:#333;
+		float:left;
+		padding:5px 12px 6px 8px;
+		font-weight:bold;
+	}
+	#nav li.over a,
+	#nav a:hover {
+		color:#333;
+	}
+	
+	/* 1st Level */
+	#nav ul li,
+	#nav ul li.active {
+		float:none;
+		margin:0;
+		padding-bottom:1px;
+	}
+	#nav ul li.last {
+		background:#EFEFEF;
+		padding-bottom:0;
+	}
+	
+	#nav ul a,
+	#nav ul a:hover {
+		background:none;
+		float:none;
+		padding:0;
+	}
+	#nav ul li a {
+		font-weight:normal !important;
+	}
+	
+	/* 2nd Level */
+	#nav ul,
+	#nav div {
+		border:1px solid #CCC;
+		position:absolute;
+		width:15em;
+			top:27px;
+			left:-10000px;
+	}
+	#nav div ul {
+		border:none;
+		position:static;
+		width:auto;
+	}
+	
+	/* 3rd+ Level */
+	#nav ul ul,
+	#nav ul div {
+		top:5px;
+	}
+	
+	#nav ul li a {
+		background:#EFEFEF;
+	}
+	#nav ul li a:hover {
+		background:#333;
+		color: #FC0;
+	}
+	#nav ul span,
+	#nav ul li.last li span {
+		padding:3px 15px 4px 15px;
+	}
+	
+	/* Show menu */
+	#nav li ul.shown-sub,
+	#nav li div.shown-sub {
+		left:0;
+		z-index:999;
+		}
+	#nav li .shown-sub ul.shown-sub,
+	#nav li .shown-sub li div.shown-sub {
+		left:100px; 
+	}
+		
+}

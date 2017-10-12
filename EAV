@@ -1,0 +1,52 @@
+https://fishpig.co.uk/magento/tutorials/eav-database-structure/
+
+
+EAV Коллекции  наследуют класс Mage_Eav_Model_Entity_Collection_Abstract
+
+коллекции:
+Mage_Eav_Model_Entity_Collection_Abstract 
+extends
+Varien_Data_Collection_Db
+extends
+Varien_Data_Collection
+impements
+iteratorAgregate, Countable
+
+ресурс:
+abstract class Mage_Eav_Model_Entity_Abstract extends Mage_Core_Model_Resource_Abstract
+    implements Mage_Eav_Model_Entity_Interface
+
+Чтобы применить к коллекции фильтр на выборку, то есть методы addFieldToFilter() и addAttributeToFilter()
+Разница в том, что addAttributeToFilter() - для EAV коллекций и в не-EAV этот метод не определен.
+addFieldToFilter() Для не-EAV коллекций, но так же переопределен для EAV следующим образом:
+
+в классе Mage_Eav_Model_Entity_Collection_Abstract
+ public function addFieldToFilter($attribute, $condition = null)
+    {
+        return $this->addAttributeToFilter($attribute, $condition);
+    }
+
+The Magento community edition currently has eight different types of EAV objects:
+•	 Customer
+•	 Customer Address
+•	 Products
+•	 Product Categories
+•	 Orders
+•	 Invoices
+•	 Credit Memos
+•	 Shipments
+Эти типы являются строками таблицы eav_entity_type - раньше они все были EAV
+Теперь EAV только:
+•	 Customer
+•	 Customer Address
+•	 Products
+•	 Product Categories
+
+Entity: This represents the data items (objects) inside Magento products,
+customers, categories, and orders. Each entity is stored in the database with
+a unique ID
+
+Attribute: These are our object properties. Instead of having one column per
+attribute on the product table, attributes are stored on separate sets of tables.
+
+Value: As the name implies, it is simply the value link to a particular attribute.

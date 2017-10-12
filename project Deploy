@@ -1,0 +1,47 @@
+ssh <username>@<domain> -p<port>
+ssh  mysait@mysa.it -p2201
+ssh 10.201.1.5 -ldep_1_1 -p1122 - соединение c каталогом сервера по SSH через консоль
+ssh dep_1_1@10.201.1.5 -p1122 - тоже самое с другим синтаксисом
+mysql -h10.201.1.3 -udep_1_1_ehex -pehex123 dep_1_1_ehex < dumpEhex.sql - если бд на другом хосте. Соотвественно в local.xml указать хост 10.201.1.3
+
+если ошибки с ключами то нужно соответсвенно в начало и конец скл дампфайла добавить строки SET FOREIGN_KEY_CHECKS = 0; SET FOREIGN_KEY_CHECKS = 1;
+
+pwd - когда находимся в каталоге сервера, то эт ой командой можем посмотреть текущую директорию
+ls - команда, отображающая список файлов и подкатологов, находящихся в конкретном каталоге 
+ls -a - отображает список файлов и подкаталогов, включая скрытые
+
+mysqldump -u<user> -p<password> <db_name> > <dump_name> - делает дамп базы
+mysqldump -umysa_prod_user -pSan7398! mysa_prod>dumptest.sql 
+
+mysql -u<user> -p<password> <db_name> < <dump_name> - заливает дамп базы
+mysql -umysa_prod_user -pSan7398\! mysa_prod<mysa.sql
+
+mysql -u<имя пользователя БД> -p<пароль для укаанного пользователя> - в случае с root/root Будет mysql -uroot -proot
+после этой команды можем напрямую писать запросы в СУБД через консоль
+create database mysa_prod;
+grant all privileges on mysa_prod.* to mysa_prod_user@localhost identified by 'San7398!'; - так мы мод метапользователем БД создаем своего пользователя и даем ему все привелегии
+show warnings - показывает варнинги СУБД запроса
+exit;
+открываем файл local.xml в etc -  и там настройки соединения с БД. Они фигурируют в команде ниже
+mysql -u<username> -p<password> <dbname><<дамп Д, который мы импортим> команда вводится локально, а не в  'mysql>'
+в случае с проектом mysa :  mysql -umysa_prod_user -pSan7398\! mysa_prod<mysa.sql
+все символы, отличные от букв/цифр, экранируются слешем 
+
+в heidy_sql запрос
+select * from mg3v_core_config_data where path like "web%"
+в следующих 2х значениях path результирющей таблицы меняем value на значение url сайта на локальном хосте (в нашем случае поменяли на http://ribatsuga.loc/)
+1й path) web/unsecure/base_url
+2й path) web/secure/base_url
+
+создаем в папке с проектом директории var/ и media/, если их нет. Даем им полные права
+
+mysql -uroot -proot - запустить mysql консоль
+mysql> show variables показать текущие настройки mysql;
+	
+Как отменить реврайт на сайте : 
+System->Configuration->Web->Search Engines Optimization->Use Web Server Rewrites = No
+
+
+
+sudo ssh-keygen - создает ссх ключ в задаваемой директории (по умолчанию предлагает /root/.ssh/id_rsa)
+потом его в настройках битбакета вписываем: https://bitbucket.org/account/user/supremacy91/ssh-keys/

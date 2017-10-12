@@ -1,0 +1,172 @@
+
+о работе с коллекциями
+https://www.atwix.com/magento/working-with-large-collections/ 
+http://inchoo.net/magento/working-with-large-magento-collections/
+https://www.vortexcommerce.com/magento-direct-sql/
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Mage_Core_Model_Resource_Setup  -> 
+public function getTable($tableName)
+    {
+        $cacheKey = $this->_getTableCacheName($tableName);
+        if (!isset($this->_tables[$cacheKey])) {
+            $this->_tables[$cacheKey] = Mage::getSingleton('core/resource')->getTableName($tableName);
+        }
+        return $this->_tables[$cacheKey];
+    }
+
+
+ Mage::getSingleton('core/resource')->getConnection()->lastInsertId('eav_attribute_option', 'option_id'); - выдает последний вставленный айдишник
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+\
+
+Magento database MySQL read and write adapters.
+
+	
+//database read adapter 
+$read = Mage::getSingleton('core/resource')->getConnection('core_read'); 
+ 
+//database write adapter 
+$write = Mage::getSingleton('core/resource')->getConnection('core_write');
+ 
+Функция getConnection() в качестве принимает имя ресурса, который вы пытаетесь запросить и возвращает объект класса Varien_Db_Adapter_Pdo_Mysql. Этот клас наследуется от Zend_Db_Adapter_Abstract и следовательно вы можете выполнять все функции класса Zend DB Adapter.
+метод select() на адаптере и метод getSelect() на коллекции фозвращают обьект Varien_Db_Select
+
+Циклом foreach() можно перебрать коллекцию, к которой еще не были применены никакие аттрибуты
+
+//Functions of read and write adapter
+$readMethods = get_class_methods(get_class($read));foreach($readMethods as $r){echo $r."\n";}
+$writeMethods = get_class_methods(get_class($write));foreach($writeMethods as $r){echo $r."\n";}
+
+
+$results = $read->fetchAll("select * from customer_entity where email like '%@codexpedia.com'"); 
+var_dump($results[0]);
+foreach($results as $r)
+{
+    var_dump($r);
+}
+
+$write->insert(
+        "A_TABLE_NANE", 
+        array("a_column_name" => value, "a_column_name" => value)
+);
+
+$write->update(
+        "A_TABLE_NANE",
+        array("a_column_name" => value, "a_column_name" => value),
+        "entity_id=18"
+);
+
+$write->delete(
+    "A_TABLE_NANE",
+    array ("entity_id=18", "column1 = ...")
+);
+
+Magento Raw Query. It can be used for create, read, update, and delete operations.
+Его можно вызывть на read и на write адаптерах вне зависимости от того, какой тип запроса.
+//raw query Varien_Db_Statement_Pdo_Mysql
+$customers = $read->query("select * from customer_entity");
+var_dump($customers);
+foreach($customers as $c)
+{
+    var_dump($c);
+}
+
+
+$writeConnection->insertOnDuplicate(
+catalog_product_entity_int',
+array("entity_type_id" => 4, "attribute_id" => $idTax,
+"store_id" => 0, "entity_id" => $idProduct, "value" => 0)
+);
+
+insertOnDuplicate($table, array $data, array $fields = array()   X-Ref
+Inserts a table row with specified data.
+
+param: mixed $table The table to insert data into.
+param: array $data Column-value pairs or array of column-value pairs.
+param: arrat $fields update fields pairs or values
+return: int The number of affected rows.
+
+
+$test = $read->fetchAll("select * from catalog_product_entity limit 3");
+Выведет массив из 3х записей в базе, каждой записью будет массив из значений колонок. В данном случае - 
+$test = $read->fetchCol("select * from catalog_product_entity limit 3");
+Выведет массив из 3х записаей в базе, каждой записью будет хначение первой колонки результата. В данном случае - 3 айдишника товаров
+$test = $readConnection->fetchRow("select * from catalog_product_entity limit 3");
+Выведет 1й запись в базе в виде массива значений колонок
+$test = $read->fetchOne("select * from catalog_product_entity limit 3");
+Выведет первое значение результирующего массива из  первой колонки результата. В данном случае - просто айдишник одного товара
+
+
+другой синтаксис селект - запроса к БД:
+$select = $readConnection->select()
+            ->from('catalog_product_entity', array('*'))
+            ->where('entity_id<87700')
+            ->where('entity_id>?',87695);
+$test = $readConnection->fetchAll($select);
+
+
+запрос к БД с реализацией OR:
+$select = $readConnection->select()
+            ->from('catalog_product_entity', array('*'))
+            ->where('entity_id<87700')
+            ->orWhere('entity_id>?',87695);
+$test = $readConnection->fetchAll($select);
+
+
+addFieldToSelect:
+
+addFieldToSelect('created_at') - добавит именно аттрибут created_at к выборке;
+addFieldToSelect(array('created_at')) - добавит помимо указанных аттрибутов еще и аттрибут, являющийся первичным ключем.
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+$readConnection = Mage::getSingleton('core/resource')->getConnection('core_read'); - обьект класса Varien_Db_Adapter_Pdo_Mysql 
+$select = readConnection->select() - обьект класса Varien_Db_Select
+Mage::getModel('ddcdistribution/ddcdistribution')->getCollection()->getSelect() - обьект класса Varien_Db_Select
+
+
+пример с составным прямым селект - запросом
+/** @var $select Varien_Db_Select */
+$select = $conn->select()
+    ->from(array('p' => $coreResource->getTableName('catalog/product')), new Zend_Db_Expr('COUNT(*)'))
+    ->join(
+        array('st' => $coreResource->getTableName('catalog/product_enabled_index')),
+        'st.product_id = p.entity_id',
+        array()
+    )
+    ->where('st.visibility = ?', Mage_Catalog_Model_Product_Visibility::VISIBILITY_BOTH)
+    ->where('st.store_id = ?', Mage::app()->getStore()->getId());
+
+The select object is used for constructing the query. This class extends Zend_Db_Select. We passed the table name and column name in the method. Pay attention to how the table name is being passed to the method using the Mage_Core_Model_Resource::getTableName() method. You should never use raw table names, because Magento tables can be created with a custom prefix.
+
+join method is used for joining the enabled products index table. The second parameter is a condition for joining, and the third parameter contains the columns that we need to select from the joined table (in our example no columns are required from that table).
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+На все EAV - коллекции при формировании запроса дается псевдоним 'e'. Пример:
+Mage::getModel('catalog/product')->getCollection()->getSelect()->__toString() =>
+SELECT `e`.* FROM `catalog_product_entity` AS `e` 
+
+На все flat - коллекции при формировании запроса дается псевдоним 'main_table'
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+addAttributeToFilter - формирует запрос еще до загрузки коллекции, во время выполнения самого метода.
+
+addAttributeToSelect - формирует запрос после загрузки коллекции, в методе:
+Mage_Eav_Model_Entity_Collection_Abstract => load() => $this->_afterLoad();
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+class Varien_Data_Collection:
+
+ public function getIterator()
+    {
+        $this->load();
+        return new ArrayIterator($this->_items);
+    }
+
